@@ -1,62 +1,57 @@
+def sjf(processes):
+    n = len(processes)
+    time = 0
+    completed = 0
+    done = [False] * n
+    result = []
+
+    while completed < n:
+        idx = -1
+        min_bt = float('inf')
+
+        for i in range(n):
+            pid, at, bt = processes[i]
+            if at <= time and not done[i] and bt < min_bt:
+                min_bt = bt
+                idx = i
+
+        if idx == -1:
+            time += 1
+            continue
+
+        pid, at, bt = processes[idx]
+        ct = time + bt
+        tat = ct - at
+        wt = tat - bt
+        result.append((pid, at, bt, ct, tat, wt))
+
+        time = ct
+        done[idx] = True
+        completed += 1
+
+    return result
+
+
+def show(result):
+    print(f"{'PID':<5}{'AT':<5}{'BT':<5}{'CT':<5}{'TAT':<5}{'WT':<5}")
+    total_tat = total_wt = 0
+    for pid, at, bt, ct, tat, wt in result:
+        print(f"P{pid:<4}{at:<5}{bt:<5}{ct:<5}{tat:<5}{wt:<5}")
+        total_tat += tat
+        total_wt += wt
+
+    n = len(result)
+    print(f"\nAverage TAT: {total_tat/n:.2f}")
+    print(f"Average WT: {total_wt/n:.2f}")
+
+
 processes = [
-    ["P1", 3, 3, 0, 0, 0],
-    ["P2", 2, 5, 0, 0, 0],
-    ["P3", 5, 4, 0, 0, 0],
-    ["P4", 1, 3, 0, 0, 0],
-    ["P5", 6, 2, 0, 0, 0]
+    [1, 3, 2],
+    [2, 2, 3],
+    [3, 0, 2],
+    [4, 1, 1],
+    [5, 4, 5]
 ]
 
-n = len(processes)
-completed = []
-current_time = 0
-total_wt = 0
-total_tat = 0
-
-print("Execution Order :")
-
-while len(completed) < n:
-
-    available = []
-
-    for p in processes:
-        if p[0] not in completed and p[1] <= current_time:
-            available.append(p)
-
-    if not available:
-        current_time += 1
-        continue
-
-    selected = min(available, key=lambda x: x[2])
-
-    pid = selected[0]
-    at = selected[1]
-    bt = selected[2]
-
-    ct = current_time + bt
-    wt = current_time - at
-    tat = ct - at
-
-    selected[3] = ct
-    selected[4] = tat
-    selected[5] = wt
-
-    completed.append(pid)
-    current_time = ct
-
-    total_wt += wt
-    total_tat += tat
-
-    print(pid, end=" ")
-
-print("\n")
-
-print("PID\tAT\tBT\tCT\tTAT\tWT")
-
-for p in processes:
-    print(f"{p[0]}\t{p[1]}\t{p[2]}\t{p[3]}\t{p[4]}\t{p[5]}")
-
-average_wt = total_wt / n
-average_tat = total_tat / n
-
-print("Average WT :", average_wt)
-print("Average TAT :", average_tat)
+result = sjf(processes)
+show(result)
